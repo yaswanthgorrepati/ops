@@ -3,14 +3,17 @@ package com.ecommerce.ops.service.impl;
 import com.ecommerce.ops.dto.OrderDTO;
 import com.ecommerce.ops.dto.OrderItemDto;
 import com.ecommerce.ops.dto.OrderResponseDto;
+import com.ecommerce.ops.entity.AuditLogs;
 import com.ecommerce.ops.entity.OrderItems;
 import com.ecommerce.ops.entity.Orders;
 import com.ecommerce.ops.enums.OrderStatus;
 import com.ecommerce.ops.exception.ApiException;
 import com.ecommerce.ops.exception.ResponseCode;
+import com.ecommerce.ops.repository.AuditLogRepository;
 import com.ecommerce.ops.repository.OrderItemRepository;
 import com.ecommerce.ops.repository.OrderRepository;
 import com.ecommerce.ops.service.OrderService;
+import com.ecommerce.ops.utils.AuditUtil;
 import com.ecommerce.ops.utils.Constants;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -32,6 +35,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private AuditLogRepository auditLogRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
@@ -169,8 +175,16 @@ public class OrderServiceImpl implements OrderService {
             }
 
             logger.info("Order cancelled");
+            String prevData = AuditUtil.toJson(orders.get());
+
             orders.get().setOrderStatus(OrderStatus.CANCELED);
             orderRepository.save(orders.get());
+
+            logger.info("creating audit logs");
+            String currData = AuditUtil.toJson(orders.get());
+            AuditLogs auditLogs = new AuditLogs(Orders.class.getSimpleName(), prevData, currData);
+            auditLogRepository.save(auditLogs);
+
             return new OrderDTO(orderId, userId, orders.get().getOrderStatus(), Constants.ORDER_CANCELLATION_SUCCESS_MESSAGE);
         } catch (Exception e) {
             logger.error("Error occurred in cancelOrder: {}", e.getStackTrace());
