@@ -1,7 +1,6 @@
 package com.ecommerce.ops.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 

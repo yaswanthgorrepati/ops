@@ -2,7 +2,7 @@ package com.ecommerce.ops.controller;
 
 import ch.qos.logback.core.util.StringUtil;
 import com.ecommerce.ops.dto.OrderDTO;
-import com.ecommerce.ops.dto.OrderRequestDto;
+import com.ecommerce.ops.dto.OrderItemDto;
 import com.ecommerce.ops.dto.OrderResponseDto;
 import com.ecommerce.ops.enums.OrderStatus;
 import com.ecommerce.ops.service.OrderService;
@@ -21,9 +21,10 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping("/order")
-    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderRequestDto orderRequestDto,
+    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody List<OrderItemDto> orderItemDtoList,
                                                         @RequestHeader("user-id") Long userId) {
-        OrderResponseDto orderResponseDto = orderService.createOrder(orderRequestDto, userId);
+
+        OrderResponseDto orderResponseDto = orderService.createOrder(orderItemDtoList, userId);
         return new ResponseEntity<>(orderResponseDto, HttpStatus.OK);
     }
 
