@@ -21,8 +21,7 @@ public class AuditLogs {
     @Column(columnDefinition = "TEXT")
     private String currentData;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private LocalDateTime createdAt;
 
     public AuditLogs() {

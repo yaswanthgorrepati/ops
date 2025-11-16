@@ -19,19 +19,16 @@ public class CronJobLogs {
     private Long successCount;
     private Long failureCount;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private LocalDateTime startTime;
 
-    @LastModifiedDate
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private LocalDateTime endTime;
 
     public CronJobLogs() {
     }
 
-    public CronJobLogs(LocalDateTime startTime, String jobName) {
-        this.startTime = startTime;
+    public CronJobLogs(String jobName) {
         this.jobName = jobName;
     }
 

@@ -2,14 +2,11 @@ package com.ecommerce.ops.entity;
 
 import com.ecommerce.ops.enums.OrderStatus;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "orders")
-@EntityListeners(org.springframework.data.jpa.domain.support.AuditingEntityListener.class)
 public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,12 +19,10 @@ public class Orders {
 
     private Double orderTotal;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private LocalDateTime updatedAt;
 
     public Orders() {

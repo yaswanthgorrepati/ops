@@ -1,45 +1,22 @@
 package com.ecommerce.ops.dto;
 
 import com.ecommerce.ops.enums.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
 
-public class OrderResponseDto {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class OrderResponseDto extends OrderDTO {
 
-    private Long orderId;
-    private Long userId;
-    private OrderStatus orderStatus;
     List<OrderItemDto> orderItemDtoList;
 
+    public OrderResponseDto(Long orderId, Long userId, OrderStatus orderStatus) {
+        super(orderId, userId, orderStatus, null);
+    }
+
     public OrderResponseDto(Long orderId, Long userId, OrderStatus orderStatus, List<OrderItemDto> orderItemDtoList) {
-        this.orderId = orderId;
-        this.userId = userId;
-        this.orderStatus = orderStatus;
+        super(orderId, userId, orderStatus, null);
         this.orderItemDtoList = orderItemDtoList;
-    }
-
-    public Long getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public OrderStatus getOrderStatus() {
-        return orderStatus;
-    }
-
-    public void setOrderStatus(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
     }
 
     public List<OrderItemDto> getOrderItemDtoList() {

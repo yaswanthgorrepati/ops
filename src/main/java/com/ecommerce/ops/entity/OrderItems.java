@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "order_items")
-@EntityListeners(org.springframework.data.jpa.domain.support.AuditingEntityListener.class)
 public class OrderItems {
 
     @Id
@@ -23,12 +22,10 @@ public class OrderItems {
 
     private Double unitPrice;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private LocalDateTime updatedAt;
 
     public OrderItems() {

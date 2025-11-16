@@ -1,6 +1,6 @@
 package com.ecommerce.ops.service;
 
-import com.ecommerce.ops.dto.OrderCancelDTO;
+import com.ecommerce.ops.dto.OrderDTO;
 import com.ecommerce.ops.dto.OrderRequestDto;
 import com.ecommerce.ops.dto.OrderResponseDto;
 import com.ecommerce.ops.enums.OrderStatus;
@@ -15,6 +15,6 @@ public interface OrderService {
 
     List<OrderResponseDto> listOrders(Long userId, OrderStatus status);
 
-    OrderCancelDTO cancelOrder(Long orderId, Long userId);
+    OrderDTO cancelOrder(Long orderId, Long userId);
 
 }

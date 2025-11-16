@@ -1,6 +1,6 @@
 package com.ecommerce.ops.service.impl;
 
-import com.ecommerce.ops.dto.OrderCancelDTO;
+import com.ecommerce.ops.dto.OrderDTO;
 import com.ecommerce.ops.dto.OrderItemDto;
 import com.ecommerce.ops.dto.OrderRequestDto;
 import com.ecommerce.ops.dto.OrderResponseDto;
@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.ecommerce.ops.utils.Constants.ORDER_CANCELLATION_SUCCESS_MESSAGE;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -59,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
 
             orderItemRepository.saveAll(orderItemsList);
 
-            return new OrderResponseDto(orders.getId(), userId, OrderStatus.PENDING, orderDto.getOrderItemDtoList());
+            return new OrderResponseDto(orders.getId(), userId, OrderStatus.PENDING);
         } catch (Exception e) {
             System.out.println(e.getStackTrace());
             System.out.println(e.getMessage());
@@ -81,21 +83,31 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponseDto> listOrders(Long userId, OrderStatus status) {
-        List<Orders> ordersList = orderRepository.findByCustomerId(userId);
+
+        List<Orders> ordersList;
+
+        if (status != null) {
+            ordersList = orderRepository.findByCustomerIdAndOrderStatus(userId, status);
+        } else {
+            ordersList = orderRepository.findByCustomerId(userId);
+        }
+
         List<OrderResponseDto> orderResponseDtoList = ordersList.stream().filter(Objects::nonNull).map(order -> {
             List<OrderItemDto> orderItemDtoList = getOrderItemDtoFromOrderId(order.getId());
             return new OrderResponseDto(order.getId(), order.getCustomerId(), order.getOrderStatus(), orderItemDtoList);
         }).collect(Collectors.toList());
+
         return orderResponseDtoList;
     }
 
     @Transactional
     @Override
-    public OrderCancelDTO cancelOrder(Long orderId, Long userId) {
+    public OrderDTO cancelOrder(Long orderId, Long userId) {
         Optional<Orders> orders = orderRepository.findByIdAndCustomerId(orderId, userId);
         if (orders.isPresent() && orders.get().getOrderStatus() == OrderStatus.PENDING) {
             orders.get().setOrderStatus(OrderStatus.CANCELED);
             orderRepository.save(orders.get());
+            return new OrderDTO(orderId, userId, orders.get().getOrderStatus(), ORDER_CANCELLATION_SUCCESS_MESSAGE);
         }
         return null;
     }

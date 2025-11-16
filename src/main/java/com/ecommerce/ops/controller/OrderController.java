@@ -1,7 +1,7 @@
 package com.ecommerce.ops.controller;
 
 import ch.qos.logback.core.util.StringUtil;
-import com.ecommerce.ops.dto.OrderCancelDTO;
+import com.ecommerce.ops.dto.OrderDTO;
 import com.ecommerce.ops.dto.OrderRequestDto;
 import com.ecommerce.ops.dto.OrderResponseDto;
 import com.ecommerce.ops.enums.OrderStatus;
@@ -46,9 +46,9 @@ public class OrderController {
     }
 
     @PutMapping("/order/{orderId}")
-    public ResponseEntity<OrderCancelDTO> cancelPendingOrder(@PathVariable("orderId") Long orderId,
-                                                             @RequestHeader("user-id") Long userId) {
-        OrderCancelDTO orderCancelDTO = orderService.cancelOrder(orderId, userId);
+    public ResponseEntity<OrderDTO> cancelPendingOrder(@PathVariable("orderId") Long orderId,
+                                                       @RequestHeader("user-id") Long userId) {
+        OrderDTO orderCancelDTO = orderService.cancelOrder(orderId, userId);
         return new ResponseEntity<>(orderCancelDTO, HttpStatus.OK);
     }
 }
