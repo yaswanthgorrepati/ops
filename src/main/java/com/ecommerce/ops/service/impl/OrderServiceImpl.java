@@ -13,6 +13,8 @@ import com.ecommerce.ops.repository.OrderRepository;
 import com.ecommerce.ops.service.OrderService;
 import com.ecommerce.ops.utils.Constants;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -31,10 +33,13 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
+
     @Transactional
     @Override
     public OrderResponseDto createOrder(List<OrderItemDto> orderItemDtoList, Long userId) {
         try {
+            logger.info("validating the create order request");
             ResponseCode responseCode = validateCreateOrderRequest(orderItemDtoList, userId);
 
             if (responseCode != ResponseCode.SUCCESS)
@@ -45,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
                     .filter(Objects::nonNull)
                     .mapToDouble(orderItemDto -> orderItemDto.getUnitPrice() * orderItemDto.getQuantity())
                     .sum();
+            logger.info("Total order sum is :{}", orderTotal);
             if (isNullOrNonPositiveDouble(orderTotal)) {
                 throw new ApiException(ResponseCode.INVALID_ORDER_ITEM_LIST);
             }
@@ -52,6 +58,7 @@ public class OrderServiceImpl implements OrderService {
             Orders orders = new Orders(userId, OrderStatus.PENDING, orderTotal);
 
             orderRepository.save(orders);
+            logger.info("Order save orderId: {}", orders.getId());
 
             List<OrderItems> orderItemsList = orderItemDtoList
                     .stream()
@@ -63,9 +70,11 @@ public class OrderServiceImpl implements OrderService {
                     .collect(Collectors.toList());
 
             orderItemRepository.saveAll(orderItemsList);
+            logger.info("Order items saved successfully");
 
-            return new OrderResponseDto(orders.getId(), userId, OrderStatus.PENDING);
+            return new OrderResponseDto(orders.getId(), userId, orders.getOrderStatus());
         } catch (Exception e) {
+            logger.error("Error occurred in create order: {}", e.getStackTrace());
             throw new ApiException(ResponseCode.INTERNAL_ERROR, e.getMessage());
         }
     }
@@ -73,6 +82,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto getOrder(Long orderId, Long userId) {
         try {
+            logger.info(" Validating the getOrder details");
             if (isNullOrNonPositiveNumber(orderId) || isNullOrNonPositiveNumber(userId)) {
                 throw new ApiException(ResponseCode.INVALID_ORDER_ID_USER_ID_);
             }
@@ -80,17 +90,20 @@ public class OrderServiceImpl implements OrderService {
             Optional<Orders> orders = orderRepository.findByIdAndCustomerId(orderId, userId);
 
             if (orders.isEmpty()) {
+                logger.error("No order details found");
                 throw new ApiException(ResponseCode.EMPTY_ORDER_FOUND);
             }
 
             List<OrderItemDto> orderItemDtoList = getOrderItemDtoFromOrderId(orders.get().getId());
 
             if (CollectionUtils.isEmpty(orderItemDtoList)) {
+                logger.error("No order item details found");
                 throw new ApiException(ResponseCode.EMPTY_ORDER_ITEMS);
             }
 
             return new OrderResponseDto(orders.get().getId(), orders.get().getCustomerId(), orders.get().getOrderStatus(), orderItemDtoList);
         } catch (Exception e) {
+            logger.error("Error occurred in getOrder: {}", e.getStackTrace());
             throw new ApiException(ResponseCode.INTERNAL_ERROR, e.getMessage());
         }
     }
@@ -98,8 +111,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponseDto> listOrders(Long userId, OrderStatus status) {
         try {
+            logger.info("Retrieving all the orders for the userId:{}", userId);
             List<Orders> ordersList;
             if (isNullOrNonPositiveNumber(userId)) {
+                logger.error("Invalid userId");
                 throw new ApiException(ResponseCode.NO_USER_ID);
             }
 
@@ -110,6 +125,7 @@ public class OrderServiceImpl implements OrderService {
             }
 
             if (CollectionUtils.isEmpty(ordersList)) {
+                logger.error("Order details are not found");
                 throw new ApiException(ResponseCode.ORDER_NOT_FOUND);
             }
 
@@ -118,6 +134,7 @@ public class OrderServiceImpl implements OrderService {
                     .map(order -> {
                         List<OrderItemDto> orderItemDtoList = getOrderItemDtoFromOrderId(order.getId());
                         if (CollectionUtils.isEmpty(orderItemDtoList)) {
+                            logger.error("No order items are found for orderId:{}", order.getId());
                             throw new ApiException(ResponseCode.EMPTY_ORDER_ITEMS);
                         }
                         return new OrderResponseDto(order.getId(), order.getCustomerId(), order.getOrderStatus(), orderItemDtoList);
@@ -125,6 +142,7 @@ public class OrderServiceImpl implements OrderService {
 
             return orderResponseDtoList;
         } catch (Exception e) {
+            logger.error("Error occurred in listOrders: {}", e.getStackTrace());
             throw new ApiException(ResponseCode.INTERNAL_ERROR, e.getMessage());
         }
     }
@@ -133,6 +151,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO cancelOrder(Long orderId, Long userId) {
         try {
+            logger.info("Cancelling the order:{}", orderId);
             if (isNullOrNonPositiveNumber(orderId) || isNullOrNonPositiveNumber(userId)) {
                 throw new ApiException(ResponseCode.INVALID_ORDER_ID_USER_ID_);
             }
@@ -140,17 +159,21 @@ public class OrderServiceImpl implements OrderService {
             Optional<Orders> orders = orderRepository.findByIdAndCustomerId(orderId, userId);
 
             if (orders.isEmpty()) {
+                logger.error("No order details are found");
                 throw new ApiException(ResponseCode.EMPTY_ORDER_FOUND);
             }
 
             if (orders.get().getOrderStatus() != OrderStatus.PENDING) {
+                logger.info("Order is not pending status to cancel, so skipping the cancel");
                 return new OrderDTO(orderId, userId, orders.get().getOrderStatus(), Constants.ORDER_NOT_CANCELLED);
             }
 
+            logger.info("Order cancelled");
             orders.get().setOrderStatus(OrderStatus.CANCELED);
             orderRepository.save(orders.get());
             return new OrderDTO(orderId, userId, orders.get().getOrderStatus(), Constants.ORDER_CANCELLATION_SUCCESS_MESSAGE);
         } catch (Exception e) {
+            logger.error("Error occurred in cancelOrder: {}", e.getStackTrace());
             throw new ApiException(ResponseCode.INTERNAL_ERROR, e.getMessage());
         }
     }
@@ -172,6 +195,8 @@ public class OrderServiceImpl implements OrderService {
             return ResponseCode.INVALID_ORDER_ITEM_LIST;
         }
 
+        logger.info("Validated the create order request");
+
         return ResponseCode.SUCCESS;
     }
 
@@ -186,7 +211,7 @@ public class OrderServiceImpl implements OrderService {
                 .filter(Objects::nonNull)
                 .map(orderItems -> new OrderItemDto(orderItems.getId(), orderItems.getProductId(), orderItems.getQuantity(), orderItems.getUnitPrice()))
                 .collect(Collectors.toList());
-
+        logger.info("Returning the orderItems");
         return orderItemDtoList;
     }
 
