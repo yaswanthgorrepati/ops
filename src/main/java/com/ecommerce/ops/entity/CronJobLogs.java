@@ -13,9 +13,13 @@ public class CronJobLogs {
     private Long id;
 
     private String jobName;
-    private Integer totalOrdersProcessed;
-    private Long successCount;
-    private Long failureCount;
+
+    private Integer totalOrdersCount;
+    private Integer successCount;
+    private Integer failureCount;
+
+    private Long startIndex;
+    private Long endIndex;
 
     @Column(nullable = false, updatable = false, insertable = false)
     private LocalDateTime startTime;
@@ -30,44 +34,84 @@ public class CronJobLogs {
         this.jobName = jobName;
     }
 
+    public CronJobLogs(String jobName, Integer totalOrdersCount, Integer successCount, Integer failureCount, Long startIndex, Long endIndex) {
+        this.jobName = jobName;
+        this.totalOrdersCount = totalOrdersCount;
+        this.successCount = successCount;
+        this.failureCount = failureCount;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public Integer getTotalOrdersProcessed() {
-        return totalOrdersProcessed;
-    }
-
-    public void setTotalOrdersProcessed(Integer totalOrdersProcessed) {
-        this.totalOrdersProcessed = totalOrdersProcessed;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getJobName() {
         return jobName;
     }
 
-    public Long getSuccessCount() {
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
+    public Integer getTotalOrdersCount() {
+        return totalOrdersCount;
+    }
+
+    public void setTotalOrdersCount(Integer totalOrdersCount) {
+        this.totalOrdersCount = totalOrdersCount;
+    }
+
+    public Integer getSuccessCount() {
         return successCount;
     }
 
-    public void setSuccessCount(Long successCount) {
+    public void setSuccessCount(Integer successCount) {
         this.successCount = successCount;
     }
 
-    public Long getFailureCount() {
+    public Integer getFailureCount() {
         return failureCount;
     }
 
-    public void setFailureCount(Long failureCount) {
+    public void setFailureCount(Integer failureCount) {
         this.failureCount = failureCount;
+    }
+
+    public Long getStartIndex() {
+        return startIndex;
+    }
+
+    public void setStartIndex(Long startIndex) {
+        this.startIndex = startIndex;
+    }
+
+    public Long getEndIndex() {
+        return endIndex;
+    }
+
+    public void setEndIndex(Long endIndex) {
+        this.endIndex = endIndex;
     }
 
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
     public LocalDateTime getEndTime() {
         return endTime;
     }
 
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
 }

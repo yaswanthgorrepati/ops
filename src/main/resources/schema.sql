@@ -47,17 +47,21 @@ CREATE INDEX idx_order_items_order_product ON order_items(order_id, product_id);
 CREATE TABLE IF NOT EXISTS cron_job_logs (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     job_name VARCHAR(255) NOT NULL,
-    total_orders_processed INT,
-    success_count BIGINT,
-    failure_count BIGINT,
+    total_orders_count INT,
+    success_count INT,
+    failure_count INT,
+    start_index BIGINT,
+    end_index BIGINT,
 
     start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Indexes
-CREATE INDEX idx_cron_logs_start_time ON cron_job_logs(start_time);
-
+CREATE INDEX idx_cron_job_logs_job_name ON cron_job_logs(job_name);
+CREATE INDEX idx_cron_job_logs_start_index ON cron_job_logs(start_index);
+CREATE INDEX idx_cron_job_logs_end_index ON cron_job_logs(end_index);
+CREATE INDEX idx_cron_job_logs_job_start_end ON cron_job_logs(job_name, start_index, end_index);
 
 -- ============================
 -- AUDIT LOGS TABLE
@@ -75,3 +79,22 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
 CREATE INDEX idx_audit_logs_table_name ON audit_logs(table_name);
 CREATE INDEX idx_audit_logs_table_created ON audit_logs(table_name, created_at);
+
+-- ============================
+-- CRON JOB BATCH RETRY TABLE
+-- ============================
+CREATE TABLE IF NOT EXISTS cron_job_batch_retry (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    start_index BIGINT,
+    end_index BIGINT,
+    job_name VARCHAR(255) NOT NULL,
+    retry_count INT NOT NULL DEFAULT 1,
+    start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    end_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Indexes
+CREATE INDEX idx_cron_job_batch_retry_job_name ON cron_job_batch_retry(job_name);
+CREATE INDEX idx_cron_job_batch_retry_retry_count ON cron_job_batch_retry(retry_count);
+CREATE INDEX idx_cron_job_batch_retry_job_retry ON cron_job_batch_retry(job_name, retry_count);
+

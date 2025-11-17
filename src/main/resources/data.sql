@@ -27,14 +27,6 @@ VALUES
     (5, 506, 1, 1500.00);
 
 -- ======================================
--- SAMPLE CRON JOB LOGS
--- ======================================
-INSERT INTO cron_job_logs (job_name, total_orders_processed, success_count, failure_count)
-VALUES
-    ('ORDER_PENDING_TO_PROCESSING_JOB', 4, 4, 0),
-    ('ORDER_PENDING_TO_PROCESSING_JOB', 25, 24, 1);
-
--- ======================================
 -- SAMPLE AUDIT LOGS
 -- ======================================
 INSERT INTO audit_logs (table_name, previous_data, current_data)
