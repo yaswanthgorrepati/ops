@@ -1,12 +1,15 @@
 package com.ecommerce.ops.jobs;
 
+import com.ecommerce.ops.entity.AuditLogs;
 import com.ecommerce.ops.entity.CronJobBatchRetry;
 import com.ecommerce.ops.entity.CronJobLogs;
 import com.ecommerce.ops.entity.Orders;
 import com.ecommerce.ops.enums.OrderStatus;
+import com.ecommerce.ops.repository.AuditLogRepository;
 import com.ecommerce.ops.repository.CronJobBatchRetryRepository;
 import com.ecommerce.ops.repository.CronJobLogRepository;
 import com.ecommerce.ops.repository.OrderRepository;
+import com.ecommerce.ops.utils.AuditUtil;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,9 @@ public class OrderProcessingJob {
 
     @Autowired
     private CronJobBatchRetryRepository cronJobBatchRetryRepository;
+
+    @Autowired
+    private AuditLogRepository auditLogRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderProcessingJob.class);
 
@@ -102,7 +108,13 @@ public class OrderProcessingJob {
 
         for (Orders order : pendingOrders) {
             try {
+                String prevData = AuditUtil.toJson(order);
+
                 order.setOrderStatus(OrderStatus.PROCESSING);
+
+                String currData = AuditUtil.toJson(order);
+                saveAuditLogs(Orders.class.getSimpleName(), prevData, currData);
+
                 orderRepository.save(order);
                 success++;
             } catch (Exception e) {
@@ -146,7 +158,13 @@ public class OrderProcessingJob {
 
         for (Orders order : pendingOrders) {
             try {
+                String prevData = AuditUtil.toJson(order);
+
                 order.setOrderStatus(OrderStatus.PROCESSING);
+
+                String currData = AuditUtil.toJson(order);
+                saveAuditLogs(Orders.class.getSimpleName(), prevData, currData);
+
                 orderRepository.save(order);
                 success++;
             } catch (Exception e) {
@@ -158,7 +176,13 @@ public class OrderProcessingJob {
         logger.info("Success count in retryOrderProcessing : {}", success);
         logger.info("Failure count in retryOrderProcessing : {}", failure);
 
+        String prevData = AuditUtil.toJson(cronJobBatchRetry);
+
         cronJobBatchRetry.setRetryCount(cronJobBatchRetry.getRetryCount() + 1);
+
+        String currData = AuditUtil.toJson(cronJobBatchRetry);
+        saveAuditLogs(cronJobBatchRetry.getClass().getSimpleName(), prevData, currData);
+
         cronJobBatchRetryRepository.save(cronJobBatchRetry);
 
         logger.info("Retry count is :{}", cronJobBatchRetry.getRetryCount());
@@ -168,5 +192,11 @@ public class OrderProcessingJob {
 
         cronJobLogRepository.save(cronJobLogs);
         logger.info("Saved cronJobLogs in retryOrderProcessing");
+    }
+
+    private void saveAuditLogs(String prevData, String currData, String tableName){
+        logger.info("creating audit logs");
+        AuditLogs auditLogs = new AuditLogs(tableName, prevData, currData);
+        auditLogRepository.save(auditLogs);
     }
 }

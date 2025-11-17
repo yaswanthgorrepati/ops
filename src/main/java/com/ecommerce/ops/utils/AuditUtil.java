@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 public class AuditUtil {
 
     private static final Gson gson = new GsonBuilder()
-                                        .serializeNulls()      // include null fields
-                                        .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                                        .setPrettyPrinting()   // pretty print JSON
-                                        .create();
+            .serializeNulls()      // include null fields
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .setPrettyPrinting()   // pretty print JSON
+            .create();
 
     public static String toJson(Object obj) {
         if (obj == null) return "{}";
