@@ -46,7 +46,7 @@ public class OrderProcessingJob {
     private static final String RETRY_ORDER_PENDING_TO_PROCESSING_JOB = "RETRY_ORDER_PENDING_TO_PROCESSING_JOB";
 
     @Transactional
-    @Scheduled(cron = "0 */1 * * * ?") // every 5 minutes
+    @Scheduled(cron = "0 */5 * * * ?") // every 5 minutes
     public void processOrders() {
         try {
             logger.info("Start processOrders");
@@ -65,7 +65,7 @@ public class OrderProcessingJob {
     }
 
     @Transactional
-    @Scheduled(cron = "0 */15 * * * ?") // every 5 minutes
+    @Scheduled(cron = "0 */15 * * * ?") // every 15 minutes
     public void retryPendingOrders() {
         try {
             logger.info("Start retryPendingOrders");
