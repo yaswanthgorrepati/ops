@@ -214,6 +214,94 @@ curl --location --request PUT 'http://localhost:8080/api/ecommerce/order/6' \
 
 ---
 
+## Local Development (H2)
+
+1. Enable **dev** profile in `application.properties`:
+
+```properties
+spring.profiles.active=dev
+```
+
+2. Update dependencies in `pom.xml`:
+
+```xml
+<!-- Comment MySQL connector -->
+<!--
+<dependency>
+  <groupId>com.mysql</groupId>
+  <artifactId>mysql-connector-j</artifactId>
+  <version>8.2.0</version>
+</dependency>
+-->
+
+<!-- Uncomment H2 database -->
+<dependency>
+  <groupId>com.h2database</groupId>
+  <artifactId>h2</artifactId>
+  <scope>runtime</scope>
+</dependency>
+```
+
+3. Run the app:
+
+```bash
+
+mvn spring-boot:run
+```
+
+- Access H2 console at: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+
+---
+
+## Docker / Production (MySQL)
+
+1. Enable **prod** profile in `application.properties`:
+
+```properties
+spring.profiles.active=prod
+```
+
+2. Update dependencies in `pom.xml`:
+
+```xml
+<!-- Uncomment MySQL connector -->
+<dependency>
+  <groupId>com.mysql</groupId>
+  <artifactId>mysql-connector-j</artifactId>
+  <version>8.2.0</version>
+</dependency>
+
+<!-- Comment H2 database -->
+<!--
+<dependency>
+  <groupId>com.h2database</groupId>
+  <artifactId>h2</artifactId>
+  <scope>runtime</scope>
+</dependency>
+-->
+```
+
+3. Build the JAR:
+
+```bash
+
+mvn clean install -DskipTests=true
+```
+
+4. Build Docker image:
+
+```bash
+
+docker build -t ops .
+```
+
+5. Run with Docker Compose:
+
+```bash
+
+docker-compose up
+```
+---
 ## Notes
 
 * Ensure the application connects to a MySQL database.
